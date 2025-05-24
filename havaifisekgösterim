@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <title>Sevgilinizin Adını</title>
+  <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      background-color: #000;
+      overflow: hidden;
+      font-family: 'Pacifico', cursive;
+      color: white;
+      text-align: center;
+    }
+
+    .content {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 2;
+    }
+
+    .heart-small {
+      width: 30px;
+      height: 27px;
+      background: red;
+      position: relative;
+      display: inline-block;
+      animation: beat 1s infinite;
+    }
+
+    .heart-small::before,
+    .heart-small::after {
+      content: "";
+      width: 30px;
+      height: 27px;
+      background: red;
+      border-radius: 50%;
+      position: absolute;
+    }
+
+    .heart-small::before {
+      top: -15px;
+      left: 0;
+    }
+
+    .heart-small::after {
+      left: 15px;
+      top: 0;
+    }
+
+    @keyframes beat {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.2); }
+    }
+
+    .message {
+      font-size: 24px;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .name-display {
+      font-size: 48px;
+      text-shadow: 0 0 10px #ff99cc, 0 0 20px #ff66cc, 0 0 30px #ff3399;
+      animation: glow 2s infinite alternate;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 15px;
+      margin-top: 30px;
+    }
+
+    .ecrin-red {
+      color: red;
+      text-shadow: 0 0 10px #ff0000, 0 0 20px #cc0000, 0 0 30px #990000;
+    }
+
+    @keyframes glow {
+      0% { text-shadow: 0 0 10px #ff99cc; }
+      100% { text-shadow: 0 0 30px #ff33aa; }
+    }
+
+    canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: 0;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="fireworks"></canvas>
+
+  <div class="content">
+    <div class="message">
+     Yazılcak Güzel Sözler
+    </div>
+    <div class="name-display">
+      <div class="heart-small"></div>
+      <span class="ecrin-red">Onun İsmi</span>
+      <div class="heart-small"></div>
+    </div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('fireworks');
+    const ctx = canvas.getContext('2d');
+    let w = canvas.width = window.innerWidth;
+    let h = canvas.height = window.innerHeight;
+
+    window.addEventListener('resize', () => {
+      w = canvas.width = window.innerWidth;
+      h = canvas.height = window.innerHeight;
+    });
+
+    const fireworks = [];
+    const particles = [];
+
+    class Firework {
+      constructor() {
+        this.x = Math.random() * w;
+        this.y = h;
+        this.targetY = Math.random() * h / 2;
+        this.speed = 3;
+        this.color = `hsl(${Math.random() * 360}, 100%, 50%)`;
+      }
+      update() {
+        this.y -= this.speed;
+        if (this.y <= this.targetY) {
+          this.explode();
+          return true;
+        }
+        return false;
+      }
+      draw() {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, 2, 0, Math.PI * 2);
+        ctx.fillStyle = this.color;
+        ctx.fill();
+      }
+      explode() {
+        for (let i = 0; i < 30; i++) {
+          particles.push(new Particle(this.x, this.y, this.color));
+        }
+      }
+    }
+
+    class Particle {
+      constructor(x, y, color) {
+        this.x = x;
+        this.y = y;
+        this.speedX = (Math.random() - 0.5) * 6;
+        this.speedY = (Math.random() - 0.5) * 6;
+        this.life = 100;
+        this.color = color;
+      }
+      update() {
+        this.x += this.speedX;
+        this.y += this.speedY;
+        this.speedY += 0.05;
+        this.life--;
+        return this.life <= 0;
+      }
+      draw() {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, 2, 0, Math.PI * 2);
+        ctx.fillStyle = this.color;
+        ctx.fill();
+      }
+    }
+
+    function animate() {
+      ctx.fillStyle = "rgba(0, 0, 0, 0.2)";
+      ctx.fillRect(0, 0, w, h);
+
+      if (Math.random() < 0.05) fireworks.push(new Firework());
+
+      for (let i = fireworks.length - 1; i >= 0; i--) {
+        if (fireworks[i].update()) fireworks.splice(i, 1);
+        else fireworks[i].draw();
+      }
+
+      for (let i = particles.length - 1; i >= 0; i--) {
+        if (particles[i].update()) particles.splice(i, 1);
+        else particles[i].draw();
+      }
+
+      requestAnimationFrame(animate);
+    }
+
+    animate();
+  </script>
+</body>
+</html>
